@@ -72,7 +72,11 @@ export function postStatusUpdate(user, location, contents, cb) {
       "contents": contents
     },
     // List of comments on the post
-    "comments": []
+    "comments": [
+      {
+        "likeCounter": [3]
+      }
+    ]
   };
 
   // Add the status update to the database.
@@ -99,17 +103,43 @@ export function postComment(feedItemId, author, contents, cb) {
   // Since a CommentThread is embedded in a FeedItem object,
   // we don't have to resolve it. Read the document,
   // update the embedded object, and then update the
-  // document in the database.
+  // document in the database
   var feedItem = readDocument('feedItems', feedItemId);
   feedItem.comments.push({
     "author": author,
     "contents": contents,
-    "postDate": new Date().getTime()
+    "postDate": new Date().getTime(),
+    "likeCounter": []
   });
   writeDocument('feedItems', feedItem);
   // Return a resolved version of the feed item so React can
   // render it.
   emulateServerReturn(getFeedItemSync(feedItemId), cb);
+}
+
+/**
+ * Updates a comment's likeCounter
+ */
+export function likeComment(feedItemId, commentId, userId, cb) {
+  var feedItem = readDocument('feedItems', feedItemId);
+
+  feedItem.comments[commentId].likeCounter.push(userId);
+  writeDocument('feedItems', feedItem);
+  // Return a resolved version of the likeCounter
+  emulateServerReturn(feedItem.comments[commentId].likeCounter, cb);
+}
+
+export function unlikeComment(feedItemId, commentId, userId, cb) {
+  var feedItem = readDocument('feedItems', feedItemId);
+
+  var userIndex = feedItem.comments[commentId].likeCounter.indexOf(userId);
+  if (userIndex !== -1) {
+    // 'splice' removes items from an array. This removes 1 element starting from userIndex.
+    feedItem.comments[commentId].likeCounter.splice(userIndex, 1);
+    writeDocument('feedItems', feedItem);
+  }
+  // Return a resolved version of the likeCounter
+  emulateServerReturn(feedItem.comments[commentId].likeCounter, cb);
 }
 
 /**

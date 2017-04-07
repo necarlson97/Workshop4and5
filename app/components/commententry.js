@@ -6,6 +6,7 @@ export default class CommentEntry extends React.Component {
     this.state = {
       value: ""
     };
+
   }
 
   handleChange(e) {
@@ -24,6 +25,7 @@ export default class CommentEntry extends React.Component {
   }
 
   render() {
+
     return (
       <div>
         <div className="media-left media-top">
